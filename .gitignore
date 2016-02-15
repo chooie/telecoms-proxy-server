@@ -3,3 +3,4 @@
 
 ### Ignore Binaries
 .bin
+node_modules/websocket/build/
