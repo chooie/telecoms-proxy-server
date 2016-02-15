@@ -1,2 +1,5 @@
 ### WebStorm
 .idea/workspace.xml
+
+### Ignore Binaries
+.bin
