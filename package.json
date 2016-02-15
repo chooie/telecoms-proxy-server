@@ -1,0 +1,9 @@
+{
+  "name": "proxy-server",
+  "version": "1.0.0",
+  "private": true,
+  "license": "ISC",
+  "engines": {
+    "node": "5.5.0"
+  }
+}
