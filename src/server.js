@@ -2,6 +2,7 @@
   "use strict";
 
   var http = require("http");
+  var WebSocketServer = require("websocket").server;
 
   var PORT = 8080;
 
