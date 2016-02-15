@@ -5,4 +5,4 @@ if [ ! -f "./node_modules/.bin/jake" ] ; then
   npm rebuild
 fi
 
-./node_modules/.bin/jake
+./node_modules/.bin/jake -f "build/scripts/Jakefile.js"
