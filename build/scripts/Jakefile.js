@@ -16,7 +16,6 @@
   var TEST_FILES_PATH = "src/**/_*_test.js";
 
   //*** GENERAL
-
   desc("Lint and test everything");
   task("default", [ "lint", "test" ], function() {
     console.log("\n\nBUILD OK");
@@ -24,12 +23,9 @@
 
   desc("Start localhost server for manual testing");
   task("run", function() {
-    var runServer = require("./src/_run_server.js");
-
-    console.log("Running server. Press Ctrl-C to stop.");
-    runServer.runInteractively();
-    // We never call complete() because we want the task to hang until the user
-    // presses 'Ctrl-C'.
+    jake.exec("node src/server/server.js", { printStdout: true }, function() {
+      complete();
+    });
   }, { async: true });
 
   //*** TEST
@@ -40,15 +36,6 @@
     process.stdout.write("Testing Node.js code: ");
     mocha.runTests({
       files: [ "src/server/**/_*_test.js" ],
-      options: MOCHA_CONFIG
-    }, complete, fail);
-  }, { async: true });
-
-
-  task("testSmoke", [ "build" ], function() {
-    process.stdout.write("Running local smoke tests: ");
-    mocha.runTests({
-      files: [ "src/_smoke_test.js" ],
       options: MOCHA_CONFIG
     }, complete, fail);
   }, { async: true });
