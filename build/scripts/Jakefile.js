@@ -4,8 +4,14 @@
   "use strict";
 
   var jshint = require("simplebuild-jshint");
-  var JSHINT_CONFIG_PATH = "../config/jshint.config";
+  var mocha = require("../util/mocha_runner.js");
 
+  var MOCHA_CONFIG = {
+    ui: "bdd",
+    reporter: "spec"
+  };
+
+  var JSHINT_CONFIG_PATH = "../config/jshint.config";
   var MOCHA_BIN_PATH = "./node_modules/.bin/mocha";
   var TEST_FILES_PATH = "src/**/_*_test.js";
 
@@ -15,15 +21,23 @@
   });
 
   desc("Test the JavaScript code");
-  task("test", function() {
-    console.log("Testing JavaScripts: ");
-    jake.exec(MOCHA_BIN_PATH + " " + TEST_FILES_PATH,
-      { printStdout: true},
-      function() {
-        console.log("All tests passed.");
-        complete();
-      }
-    );
+  task("test", [ "testServer", "testSmoke" ]);
+
+  task("testServer", function() {
+    process.stdout.write("Testing Node.js code: ");
+    mocha.runTests({
+      files: [ "src/server/**/_*_test.js" ],
+      options: MOCHA_CONFIG
+    }, complete, fail);
+  }, { async: true });
+
+
+  task("testSmoke", [ "build" ], function() {
+    process.stdout.write("Running local smoke tests: ");
+    mocha.runTests({
+      files: [ "src/_smoke_test.js" ],
+      options: MOCHA_CONFIG
+    }, complete, fail);
   }, { async: true });
 
   desc("Lint the JavaScript code");

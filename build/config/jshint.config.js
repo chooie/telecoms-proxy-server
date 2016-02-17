@@ -43,7 +43,9 @@
     },
     globals: {
       "describe": false,
-      "it": false
+      "it": false,
+      "before": false,
+      "after": false
     }
   };
 
