@@ -8,7 +8,14 @@
 
   var server;
 
-  function start(host, port, callback) {
+  function start(host, port, callWhenListening) {
+    if (!host) {
+      throw new Error("requires host parameter");
+    }
+    if (!port) {
+      throw new Error("requires port parameter");
+    }
+
     server = http.createServer(function(request, response) {
       console.log("Received Request!");
       response.end(constants.helloMessage);
@@ -19,7 +26,7 @@
       server._port = port;
       var url = util.createURL(server._host, server._port);
       console.log("Server listening on: " + url);
-      callback();
+      callWhenListening();
     });
   }
 

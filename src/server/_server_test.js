@@ -9,39 +9,49 @@
   var util = require("./shared/util");
 
   describe("Server", function() {
-    before(function(done) {
-      server.start(constants.host, constants.port, done);
-    });
-
-    after(function(done) {
-      server.close(done);
-    });
-
     it("responds with 'Hello, world!'", function(done) {
-      var address = server.address();
-      var host = address.host;
-      var port = address.port;
+      server.start(constants.host, constants.port, callWhenListening);
 
-      var url = util.createURL(host, port);
-      http.get(url, function(res) {
-        var data = "";
+      function callWhenListening() {
+        var address = server.address();
+        var host = address.host;
+        var port = address.port;
 
-        res.on("data", function(chunk) {
-          console.log(data += chunk);
+        var url = util.createURL(host, port);
+        http.get(url, function(res) {
+          var data = "";
+
+          res.on("data", function(chunk) {
+            console.log(data += chunk);
+          });
+          res.on("end", function() {
+            assert.equal(data, constants.helloMessage);
+            server.close();
+            done();
+          });
         });
-        res.on("end", function() {
-          assert.equal(data, constants.helloMessage);
-          done();
-        });
-      });
+      }
     });
 
-    it("runs callback when stop completes", function(done) {
+    it("requires host and port number", function(done) {
+      assert.throws(function() {
+        server.start();
+      }, Error);
+      done();
+    });
+
+    it("runs callback when close completes", function(done) {
+      server.start(constants.host, constants.port);
       server.close(function() {
         done();
       });
-      // TODO: Make this less kludgy
-      server.start(constants.host, constants.port);
+    });
+
+    it("error when close called on already-closed server", function(done) {
+      server.close(function(err) {
+        assert.notEqual(err, undefined);
+        done();
+      });
     });
   });
 
