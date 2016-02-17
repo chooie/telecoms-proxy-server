@@ -30,7 +30,7 @@
 
   //*** TEST
   desc("Test the JavaScript code");
-  task("test", [ "testServer", "testSmoke" ]);
+  task("test", [ "testServer" ]);
 
   task("testServer", function() {
     process.stdout.write("Testing Node.js code: ");
