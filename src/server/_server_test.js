@@ -5,6 +5,7 @@
   var http = require("http");
 
   var server = require("./server.js");
+  var constants = require("./constants");
 
   describe("Server", function() {
     before(function() {
@@ -16,14 +17,14 @@
     });
 
     it("responds with 'Hello, world!'", function(done) {
-      http.get("http://localhost:8080", function(res) {
+      http.get(constants.url, function(res) {
         var data = "";
 
         res.on("data", function(chunk) {
           console.log(data += chunk);
         });
         res.on("end", function() {
-          assert.equal(data, "Hello, world!");
+          assert.equal(data, constants.helloMessage);
           done();
         });
       });

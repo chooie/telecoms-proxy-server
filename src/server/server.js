@@ -3,19 +3,18 @@
 
   var http = require("http");
   var WebSocketServer = require("websocket").server;
-
-  var PORT = 8080;
+  var constants = require("./constants");
 
   var server;
 
   exports.start = function() {
     server = http.createServer(function(request, response) {
       console.log("Received Request!");
-      response.end("Hello, world!");
+      response.end(constants.helloMessage);
     });
 
-    server.listen(PORT, function() {
-      console.log("Server listening on: http://localhost:" + PORT);
+    server.listen(constants.port, function() {
+      console.log("Server listening on: " + constants.url);
     });
   };
 
