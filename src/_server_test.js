@@ -1,6 +1,10 @@
 (function() {
   "use strict";
 
-  /* code */
+  describe("Test", function() {
+    it("passes", function() {
+      return;
+    });
+  });
 
 }());
