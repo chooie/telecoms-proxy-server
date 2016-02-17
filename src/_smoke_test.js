@@ -3,6 +3,7 @@
 
   var http = require("http");
   var assert = require("./assert.js");
+  var runServer = require("./_run_server.js");
 
   var serverProcess;
 

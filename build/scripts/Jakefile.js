@@ -15,11 +15,24 @@
   var MOCHA_BIN_PATH = "./node_modules/.bin/mocha";
   var TEST_FILES_PATH = "src/**/_*_test.js";
 
-  desc("Default Task");
+  //*** GENERAL
+
+  desc("Lint and test everything");
   task("default", [ "lint", "test" ], function() {
     console.log("\n\nBUILD OK");
   });
 
+  desc("Start localhost server for manual testing");
+  task("run", function() {
+    var runServer = require("./src/_run_server.js");
+
+    console.log("Running server. Press Ctrl-C to stop.");
+    runServer.runInteractively();
+    // We never call complete() because we want the task to hang until the user
+    // presses 'Ctrl-C'.
+  }, { async: true });
+
+  //*** TEST
   desc("Test the JavaScript code");
   task("test", [ "testServer", "testSmoke" ]);
 
@@ -40,6 +53,7 @@
     }, complete, fail);
   }, { async: true });
 
+  //*** LINT
   desc("Lint the JavaScript code");
   task("lint", function() {
     process.stdout.write("Linting JavaScripts: ");
