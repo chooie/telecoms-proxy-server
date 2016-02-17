@@ -6,13 +6,18 @@
   var jshint = require("simplebuild-jshint");
 
   desc("Default Task");
-  task("default", [ "lint" ], function() {
+  task("default", [ "lint", "test" ], function() {
     console.log("\n\nBUILD OK");
   });
 
-  desc("Lint the Javascript code");
+  desc("Test the JavaScript code");
+  task("test", function() {
+    console.log("Testing JavaScripts: ");
+  });
+
+  desc("Lint the JavaScript code");
   task("lint", function() {
-    process.stdout.write("Linting Javascripts: ");
+    process.stdout.write("Linting JavaScripts: ");
 
     jshint.checkFiles({
       files: ["src/**/*.js", "build/**/*.js"],
