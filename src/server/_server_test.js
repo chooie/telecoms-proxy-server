@@ -12,8 +12,8 @@
       server.start();
     });
 
-    after(function() {
-      server.close();
+    after(function(done) {
+      server.close(done);
     });
 
     it("responds with 'Hello, world!'", function(done) {
@@ -28,6 +28,13 @@
           done();
         });
       });
+    });
+
+    it("runs callback when stop completes", function(done) {
+      server.close(function() {
+        done();
+      });
+      server.start(); // TODO: Make this less kludgy
     });
   });
 

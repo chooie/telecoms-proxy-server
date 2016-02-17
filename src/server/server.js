@@ -18,8 +18,8 @@
     });
   };
 
-  exports.close = function() {
-      server.close();
+  exports.close = function(callback) {
+      server.close(callback);
   };
 
 }());
