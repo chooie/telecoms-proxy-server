@@ -12,8 +12,13 @@
   var TEST_FILE = "generated/test/test.html";
 
   describe("Server", function() {
-    var testDir = "generated/test";
-    var testData = "This is served from a file";
+    var expectedData = "This is served from a file";
+
+    before(function(done) {
+      fs.writeFile(TEST_FILE, expectedData, function() {
+        done();
+      });
+    });
 
     after(function(done) {
       fs.unlink(TEST_FILE, function(err) {
@@ -29,14 +34,21 @@
     });
 
     it("serves home page from file", function(done) {
-
-      fs.writeFileSync(TEST_FILE, testData);
-
       var url = util.createURL(constants.host, constants.port);
 
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 200, "status code");
-        assert.equal(responseData, testData);
+        assert.equal(responseData, expectedData);
+        done();
+      });
+    });
+
+    it("returns home page when asked for index", function(done) {
+      var url = util.createURL(constants.host, constants.port, "index.html");
+
+      httpGet(url, function(response, responseData) {
+        assert.equal(response.statusCode, 200, "status code");
+        assert.equal(responseData, expectedData);
         done();
       });
     });
@@ -49,35 +61,14 @@
       });
     });
 
-    it("returns home page when asked for index", function(done) {
-      var url = util.createURL(constants.host, constants.port, "index.html");
-
-      httpGet(url, function(response, responseData) {
-        assert.equal(response.statusCode, 200, "status code");
-        assert.equal(responseData, testData);
-        done();
-      });
+    it("requires file parameter", function(done) {
+      assert.throws(function() {
+        server.start(constants.port);
+      }, Error);
+      done();
     });
 
-    function httpGet(url, callback) {
-      server.start(constants.port, TEST_FILE);
-
-      var request = http.get(url);
-      request.on("response", function(response) {
-        var data = "";
-
-        response.on("data", function(chunk) {
-          console.log(data += chunk);
-        });
-        response.on("end", function() {
-          server.close(function() {
-            callback(response, data);
-          });
-        });
-      });
-    }
-
-    it("requires port number and file to serve", function(done) {
+    it("requires port parameter", function(done) {
       assert.throws(function() {
         server.start();
       }, Error);
@@ -91,12 +82,30 @@
       });
     });
 
-    it("error when close called on already-closed server", function(done) {
+    it("close throws exception when not running", function(done) {
       server.close(function(err) {
         assert.notEqual(err, undefined);
         done();
       });
     });
   });
+
+  function httpGet(url, callback) {
+    server.start(constants.port, TEST_FILE);
+
+    var request = http.get(url);
+    request.on("response", function(response) {
+      var data = "";
+
+      response.on("data", function(chunk) {
+        data += chunk;
+      });
+      response.on("end", function() {
+        server.close(function() {
+          callback(response, data);
+        });
+      });
+    });
+  }
 
 }());

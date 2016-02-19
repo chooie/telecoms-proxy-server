@@ -35,9 +35,9 @@
     });
 
     server.listen(port, function() {
-      var url = util.createURL(constants.host, port);
-      console.log("Server listening on: " + url);
-      console.log("Press Ctrl-C to exit");
+      //var url = util.createURL(constants.host, port);
+      //console.log("Server listening on: " + url);
+      //console.log("Press Ctrl-C to exit");
     });
   }
 
