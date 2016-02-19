@@ -26,7 +26,11 @@
       server._port = port;
       var url = util.createURL(server._host, server._port);
       console.log("Server listening on: " + url);
-      callWhenListening();
+      console.log("Press Ctrl-C to exit");
+
+      if (typeof callWhenListening === "function") {
+        callWhenListening();
+      }
     });
   }
 

@@ -23,7 +23,7 @@
 
   desc("Start localhost server for manual testing");
   task("run", function() {
-    jake.exec("node src/server/server.js", { printStdout: true }, function() {
+    jake.exec("node src/_run.js", { printStdout: true }, function() {
       complete();
     });
   }, { async: true });
