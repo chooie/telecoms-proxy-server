@@ -21,13 +21,18 @@
     server = http.createServer();
 
     server.on("request", function(request, response) {
-      console.log("Received Request!");
-      fs.readFile(fileToServe, function(err, data) {
-        if (err) {
-          throw err;
-        }
-        response.end(data);
-      });
+      console.log(request.url);
+      if (request.url === "/") {
+        fs.readFile(fileToServe, function(err, data) {
+          if (err) {
+            throw err;
+          }
+          response.end(data);
+        });
+      } else {
+        response.statusCode = 404;
+        response.end("404: Page not found.");
+      }
     });
 
     server.listen(port, function() {

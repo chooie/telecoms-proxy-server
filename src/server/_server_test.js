@@ -38,15 +38,45 @@
         var host = address.host;
         var port = address.port;
 
-        var url = util.createURL(host, port);
-        http.get(url, function(res) {
+        var request = http.get(util.createURL(host, port));
+        request.on("response", function(response) {
           var data = "";
 
-          res.on("data", function(chunk) {
+          response.on("data", function(chunk) {
             console.log(data += chunk);
           });
-          res.on("end", function() {
+          response.on("end", function() {
             assert.equal(data, testData);
+            server.close(function() {
+              done();
+            });
+          });
+        });
+      }
+    });
+
+    it("returns 404 for everything except home page", function(done) {
+      var testDir = "generated/test";
+      var testData = "This is served from a file";
+
+      fs.writeFileSync(TEST_FILE, testData);
+      server.start(constants.host, constants.port, TEST_FILE,
+        callWhenListening);
+
+      function callWhenListening() {
+        var address = server.address();
+        var host = address.host;
+        var port = address.port;
+
+        var request = http.get(util.createURL(host, port, "blargle"));
+        request.on("response", function(response) {
+          var data = "";
+
+          response.on("data", function(chunk) {
+            console.log(data += chunk);
+          });
+          response.on("end", function() {
+            assert.equal(response.statusCode, 404, "status code");
             server.close(function() {
               done();
             });
