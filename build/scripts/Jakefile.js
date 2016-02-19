@@ -1,4 +1,5 @@
-/* globals jake:false, desc:false, task:false, complete:false, fail:false */
+/* globals jake:false, desc:false, task:false, complete:false, fail:false,
+           directory:false */
 
 (function() {
   "use strict";
@@ -14,11 +15,20 @@
   var JSHINT_CONFIG_PATH = "../config/jshint.config";
   var MOCHA_BIN_PATH = "./node_modules/.bin/mocha";
   var TEST_FILES_PATH = "src/**/_*_test.js";
+  var GENERATED_DIR = "generated";
+  var TEMP_TEST_FILE_DIR = GENERATED_DIR + "/test";
+
+  directory(TEMP_TEST_FILE_DIR);
 
   //*** GENERAL
   desc("Lint and test everything");
   task("default", [ "lint", "test" ], function() {
     console.log("\n\nBUILD OK");
+  });
+
+  desc("Delete all generated files");
+  task("clean", function() {
+    jake.rmRf(GENERATED_DIR);
   });
 
   desc("Start localhost server for manual testing");
@@ -30,7 +40,7 @@
 
   //*** TEST
   desc("Test the JavaScript code");
-  task("test", [ "testServer" ]);
+  task("test", [ TEMP_TEST_FILE_DIR, "testServer" ]);
 
   task("testServer", function() {
     process.stdout.write("Testing Node.js code: ");

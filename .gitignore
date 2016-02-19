@@ -1,6 +1,12 @@
+### Mac OSX
+.DS_Store
+
 ### WebStorm
 .idea/workspace.xml
 
 ### Ignore Binaries
 .bin
 node_modules/websocket/build/
+
+### Generated Files
+generated/

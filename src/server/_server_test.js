@@ -3,6 +3,7 @@
 
   var assert = require("../assert.js");
   var http = require("http");
+  var fs = require("fs");
 
   var server = require("./server.js");
   var constants = require("./constants");
@@ -30,6 +31,22 @@
             done();
           });
         });
+      }
+    });
+
+    it("serves a file", function(done) {
+      var testDir = "generated/test";
+      var testFile = testDir + "/test.html";
+
+      try {
+        fs.writeFileSync(testFile, "Hello world");
+      } finally {
+        fs.unlinkSync(testFile);
+        assert.isOk(
+          !fs.existsSync(testFile),
+          "could not delete test file: [" + testFile + "]"
+        );
+        done();
       }
     });
 
