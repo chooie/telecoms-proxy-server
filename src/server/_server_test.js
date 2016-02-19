@@ -65,10 +65,17 @@
 
       function callWhenListening() {
         var address = server.address();
-        var host = address.host;
-        var port = address.port;
+        var url = util.createURL(address.host, address.port, "blargle");
+        httpGet(url, function(response, responseData) {
+          assert.equal(response.statusCode, 404, "status code");
+          server.close(function() {
+            done();
+          });
+        });
+      }
 
-        var request = http.get(util.createURL(host, port, "blargle"));
+      function httpGet(url, callback) {
+        var request = http.get(url);
         request.on("response", function(response) {
           var data = "";
 
@@ -76,10 +83,7 @@
             console.log(data += chunk);
           });
           response.on("end", function() {
-            assert.equal(response.statusCode, 404, "status code");
-            server.close(function() {
-              done();
-            });
+            callback(response, data);
           });
         });
       }
