@@ -35,21 +35,13 @@
 
       function callWhenListening() {
         var address = server.address();
-        var host = address.host;
-        var port = address.port;
+        var url = util.createURL(address.host, address.port);
 
-        var request = http.get(util.createURL(host, port));
-        request.on("response", function(response) {
-          var data = "";
-
-          response.on("data", function(chunk) {
-            console.log(data += chunk);
-          });
-          response.on("end", function() {
-            assert.equal(data, testData);
-            server.close(function() {
-              done();
-            });
+        httpGet(url, function(response, responseData) {
+          assert.equal(response.statusCode, 200, "status code");
+          assert.equal(responseData, testData);
+          server.close(function() {
+            done();
           });
         });
       }
@@ -73,21 +65,21 @@
           });
         });
       }
-
-      function httpGet(url, callback) {
-        var request = http.get(url);
-        request.on("response", function(response) {
-          var data = "";
-
-          response.on("data", function(chunk) {
-            console.log(data += chunk);
-          });
-          response.on("end", function() {
-            callback(response, data);
-          });
-        });
-      }
     });
+
+    function httpGet(url, callback) {
+      var request = http.get(url);
+      request.on("response", function(response) {
+        var data = "";
+
+        response.on("data", function(chunk) {
+          console.log(data += chunk);
+        });
+        response.on("end", function() {
+          callback(response, data);
+        });
+      });
+    }
 
     it("requires host and port number", function(done) {
       assert.throws(function() {
