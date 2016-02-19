@@ -2,13 +2,15 @@
   "use strict";
 
   var http = require("http");
+  var fs = require("fs");
   var WebSocketServer = require("websocket").server;
+
   var constants = require("./constants");
   var util = require("./shared/util");
 
   var server;
 
-  function start(host, port, callWhenListening) {
+  function start(host, port, fileToServe, callWhenListening) {
     if (!host) {
       throw new Error("requires host parameter");
     }
@@ -16,9 +18,16 @@
       throw new Error("requires port parameter");
     }
 
-    server = http.createServer(function(request, response) {
+    server = http.createServer();
+
+    server.on("request", function(request, response) {
       console.log("Received Request!");
-      response.end(constants.helloMessage);
+      fs.readFile(fileToServe, function(err, data) {
+        if (err) {
+          throw err;
+        }
+        response.end(data);
+      });
     });
 
     server.listen(port, function() {

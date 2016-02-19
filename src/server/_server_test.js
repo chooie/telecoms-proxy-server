@@ -9,9 +9,29 @@
   var constants = require("./constants");
   var util = require("./shared/util");
 
+  var TEST_FILE = "generated/test/test.html";
+
   describe("Server", function() {
-    it("responds with 'Hello, world!'", function(done) {
-      server.start(constants.host, constants.port, callWhenListening);
+    after(function(done) {
+      fs.unlink(TEST_FILE, function(err) {
+        var noError = !err;
+        var fileNotFound = err && err.code === "ENOENT";
+
+        if (noError || fileNotFound) {
+          return done();
+        } else {
+          done(err);
+        }
+      });
+    });
+
+    it("serves a file", function(done) {
+      var testDir = "generated/test";
+      var testData = "This is served from a file";
+
+      fs.writeFileSync(TEST_FILE, testData);
+      server.start(constants.host, constants.port, TEST_FILE,
+        callWhenListening);
 
       function callWhenListening() {
         var address = server.address();
@@ -26,27 +46,12 @@
             console.log(data += chunk);
           });
           res.on("end", function() {
-            assert.equal(data, constants.helloMessage);
-            server.close();
-            done();
+            assert.equal(data, testData);
+            server.close(function() {
+              done();
+            });
           });
         });
-      }
-    });
-
-    it("serves a file", function(done) {
-      var testDir = "generated/test";
-      var testFile = testDir + "/test.html";
-
-      try {
-        fs.writeFileSync(testFile, "Hello world");
-      } finally {
-        fs.unlinkSync(testFile);
-        assert.isOk(
-          !fs.existsSync(testFile),
-          "could not delete test file: [" + testFile + "]"
-        );
-        done();
       }
     });
 
@@ -58,7 +63,7 @@
     });
 
     it("runs callback when close completes", function(done) {
-      server.start(constants.host, constants.port);
+      server.start(constants.host, constants.port, TEST_FILE);
       server.close(function() {
         done();
       });
