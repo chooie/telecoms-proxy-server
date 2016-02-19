@@ -10,19 +10,18 @@
 
   var server;
 
-  function start(host, port, fileToServe, callWhenListening) {
-    if (!host) {
-      throw new Error("requires host parameter");
-    }
+  function start(port, fileToServe) {
     if (!port) {
+      throw new Error("requires port parameter");
+    }
+    if (!fileToServe) {
       throw new Error("requires port parameter");
     }
 
     server = http.createServer();
 
     server.on("request", function(request, response) {
-      console.log(request.url);
-      if (request.url === "/") {
+      if (request.url === "/" || request.url === "/index.html") {
         fs.readFile(fileToServe, function(err, data) {
           if (err) {
             throw err;
@@ -36,15 +35,9 @@
     });
 
     server.listen(port, function() {
-      server._host = host;
-      server._port = port;
-      var url = util.createURL(server._host, server._port);
+      var url = util.createURL(constants.host, port);
       console.log("Server listening on: " + url);
       console.log("Press Ctrl-C to exit");
-
-      if (typeof callWhenListening === "function") {
-        callWhenListening();
-      }
     });
   }
 
@@ -52,14 +45,9 @@
       server.close(callback);
   }
 
-  function address() {
-    return { host: server._host, port: server._port };
-  }
-
   module.exports = {
     start: start,
     close: close,
-    address: address
   };
 
 }());
