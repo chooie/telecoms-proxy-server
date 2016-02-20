@@ -110,18 +110,18 @@
   });
 
   function httpGet(url, callback) {
-    server.start(constants.port, TEST_HOME_PAGE, TEST_404_PAGE);
+    server.start(constants.port, TEST_HOME_PAGE, TEST_404_PAGE, function() {
+      var request = http.get(url);
+      request.on("response", function(response) {
+        var data = "";
 
-    var request = http.get(url);
-    request.on("response", function(response) {
-      var data = "";
-
-      response.on("data", function(chunk) {
-        data += chunk;
-      });
-      response.on("end", function() {
-        server.stop(function() {
-          callback(response, data);
+        response.on("data", function(chunk) {
+          data += chunk;
+        });
+        response.on("end", function() {
+          server.stop(function() {
+            callback(response, data);
+          });
         });
       });
     });

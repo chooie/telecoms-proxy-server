@@ -10,7 +10,7 @@
 
   var server;
 
-  function start(port, homePageToServe, notFoundPageToServe) {
+  function start(port, homePageToServe, notFoundPageToServe, callback) {
     if (!port) {
       throw new Error("requires port parameter");
     }
@@ -31,7 +31,7 @@
         serveFile(response, notFoundPageToServe);
       }
     });
-    server.listen(constants.port);
+    server.listen(port, callback);
   }
 
   function stop(callback) {

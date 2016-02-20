@@ -9,38 +9,63 @@
   var serverUtil = require("./server/shared/util");
 
   describe("Smoke Test", function() {
-    it.skip("tests for smoke", function(done) {
-      runServer(function() {
-        var url = serverUtil.createURL(serverConstants.host,
+    var child;
+
+    before(function(done) {
+      runServer(done);
+    });
+
+    after(function(done) {
+      child.on("exit", function() {
+        done();
+      });
+      child.kill();
+    });
+
+    it("can get home page", function(done) {
+      var url = serverUtil.createURL(serverConstants.host,
           serverConstants.port);
-        httpGet(url, function() {
-          done();
-        });
+      httpGet(url, function(response, receivedData) {
+        var matchString = "Proxy Server home page";
+        var foundHomePage = receivedData.indexOf(matchString) !== -1;
+        assert.isOk(foundHomePage, "home page should have contained test " +
+          "marker");
+        done();
       });
     });
-  });
 
-  function runServer(callback) {
-    var child = child_process.spawn(
-      "node",
-      [ "src/_run", serverConstants.port ]
-    );
-    child.stdout.setEncoding("utf8");
-    child.stdout.on("data", function(chunk) {
-      console.log("server stdout: " + chunk);
-      if (chunk.trim() === "Server started") {
-        console.log("calling callback");
-        callback();
-      }
+    it("can get 404 page", function(done) {
+      var url = serverUtil.createURL(serverConstants.host,
+        serverConstants.port, "nonexistant");
+      httpGet(url, function(response, receivedData) {
+        var matchString = "Proxy server 404 page";
+        var found404Page = receivedData.indexOf(matchString) !== -1;
+        assert.isOk(found404Page, "404 page should have contained test " +
+          "marker");
+        done();
+      });
     });
-    child.stderr.on("data", function(chunk) {
-      console.log("server stderr: " + chunk);
-    });
-    child.stdout.on("exit", function(code, signal) {
-      console.log("Server process exited with code [" + code + "] and " +
-        "signal [" + signal + "]");
-    });
-  }
+
+    function runServer(callback) {
+      child = child_process.spawn(
+        "node",
+        [ "src/_run", serverConstants.port ]
+      );
+      child.stdout.setEncoding("utf8");
+      child.stdout.on("data", function(chunk) {
+        if (chunk.trim() === "Server started") {
+          callback();
+        }
+      });
+      child.stderr.on("data", function(chunk) {
+        console.log("server stderr: " + chunk);
+      });
+      child.stdout.on("exit", function(code, signal) {
+        console.log("Server process exited with code [" + code + "] and " +
+          "signal [" + signal + "]");
+      });
+    }
+  });
 
 
   // TODO: eliminate duplication w/ _server_test.js
