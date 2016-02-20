@@ -39,7 +39,8 @@
       undef: true,
 
       // Environments
-      node: true
+      node: true,
+      esnext: true
     },
     globals: {
       "describe": false,

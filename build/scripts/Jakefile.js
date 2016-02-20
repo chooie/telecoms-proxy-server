@@ -45,7 +45,7 @@
   task("testServer", function() {
     process.stdout.write("Testing Node.js code: ");
     mocha.runTests({
-      files: [ "src/server/**/_*_test.js" ],
+      files: [ TEST_FILES_PATH ],
       options: MOCHA_CONFIG
     }, complete, fail);
   }, { async: true });

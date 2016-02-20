@@ -9,36 +9,46 @@
   var constants = require("./constants");
   var util = require("./shared/util");
 
-  var TEST_FILE = "generated/test/test.html";
+  var TEST_HOME_PAGE = "generated/test/testHome.html";
+  var TEST_404_PAGE = "generated/test/test404.html";
 
   describe("Server", function() {
-    var expectedData = "This is served from a file";
+    var homePageData = "This is the home page file";
+    var notFoundPageData = "This is the 404 page file";
 
-    before(function(done) {
-      fs.writeFile(TEST_FILE, expectedData, function() {
-        done();
-      });
+    before(function() {
+      fs.writeFileSync(TEST_HOME_PAGE, homePageData);
+      fs.writeFileSync(TEST_404_PAGE, notFoundPageData);
     });
 
     after(function(done) {
-      fs.unlink(TEST_FILE, function(err) {
-        var noError = !err;
-        var fileNotFound = err && err.code === "ENOENT";
-
-        if (noError || fileNotFound) {
+      Promise.all([cleanUpFile(TEST_HOME_PAGE), cleanUpFile(TEST_404_PAGE)])
+        .then(function() {
           done();
-        } else {
-          done(err);
-        }
-      });
+        });
     });
+
+    function cleanUpFile(fileName) {
+      return new Promise(function(resolve, reject) {
+        fs.unlink(fileName, function(err) {
+          var noError = !err;
+          var fileNotFound = err && err.code === "ENOENT";
+
+          if (noError || fileNotFound) {
+            resolve();
+          } else {
+            reject(err);
+          }
+        });
+      });
+    }
 
     it("serves home page from file", function(done) {
       var url = util.createURL(constants.host, constants.port);
 
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 200, "status code");
-        assert.equal(responseData, expectedData);
+        assert.equal(responseData, homePageData);
         done();
       });
     });
@@ -48,20 +58,29 @@
 
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 200, "status code");
-        assert.equal(responseData, expectedData);
+        assert.equal(responseData, homePageData);
         done();
       });
     });
 
     it("returns 404 for everything except home page", function(done) {
+
       var url = util.createURL(constants.host, constants.port, "blargle");
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 404, "status code");
+        assert.equal(responseData, notFoundPageData);
         done();
       });
     });
 
-    it("requires file parameter", function(done) {
+    it("requires home page parameter", function(done) {
+      assert.throws(function() {
+        server.start(constants.port);
+      }, Error);
+      done();
+    });
+
+    it("requires 404 page parameter", function(done) {
       assert.throws(function() {
         server.start(constants.port);
       }, Error);
@@ -75,15 +94,15 @@
       done();
     });
 
-    it("runs callback when close completes", function(done) {
-      server.start(constants.port, TEST_FILE);
-      server.close(function() {
+    it("runs callback when stop completes", function(done) {
+      server.start(constants.port, TEST_HOME_PAGE, TEST_404_PAGE);
+      server.stop(function() {
         done();
       });
     });
 
-    it("close throws exception when not running", function(done) {
-      server.close(function(err) {
+    it("stop throws exception when not running", function(done) {
+      server.stop(function(err) {
         assert.notEqual(err, undefined);
         done();
       });
@@ -91,7 +110,7 @@
   });
 
   function httpGet(url, callback) {
-    server.start(constants.port, TEST_FILE);
+    server.start(constants.port, TEST_HOME_PAGE, TEST_404_PAGE);
 
     var request = http.get(url);
     request.on("response", function(response) {
@@ -101,7 +120,7 @@
         data += chunk;
       });
       response.on("end", function() {
-        server.close(function() {
+        server.stop(function() {
           callback(response, data);
         });
       });

@@ -10,44 +10,46 @@
 
   var server;
 
-  function start(port, fileToServe) {
+  function start(port, homePageToServe, notFoundPageToServe) {
     if (!port) {
       throw new Error("requires port parameter");
     }
-    if (!fileToServe) {
-      throw new Error("requires port parameter");
+    if (!homePageToServe) {
+      throw new Error("requires home page parameter");
+    }
+    if (!notFoundPageToServe) {
+      throw new Error("requires 404 page parameter");
     }
 
     server = http.createServer();
-
     server.on("request", function(request, response) {
       if (request.url === "/" || request.url === "/index.html") {
-        fs.readFile(fileToServe, function(err, data) {
-          if (err) {
-            throw err;
-          }
-          response.end(data);
-        });
+        response.statusCode = 200;
+        serveFile(response, homePageToServe);
       } else {
         response.statusCode = 404;
-        response.end("404: Page not found.");
+        serveFile(response, notFoundPageToServe);
       }
     });
-
-    server.listen(port, function() {
-      //var url = util.createURL(constants.host, port);
-      //console.log("Server listening on: " + url);
-      //console.log("Press Ctrl-C to exit");
-    });
+    server.listen(constants.port);
   }
 
-  function close(callback) {
-      server.close(callback);
+  function stop(callback) {
+    server.close(callback);
+  }
+
+  function serveFile(response, pageToServe) {
+    fs.readFile(pageToServe, function(err, data) {
+      if (err) {
+        throw err;
+      }
+      response.end(data);
+    });
   }
 
   module.exports = {
     start: start,
-    close: close,
+    stop: stop,
   };
 
 }());
