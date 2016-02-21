@@ -25,47 +25,46 @@
     }
 
     server = http.createServer();
-    server.on("request", function(request, response) {
-      if (isHomeRoute(request.url)) {
-        response.statusCode = 200;
-        serveFile(response, homePageToServe);
-      } else {
-        var url = request.url;
-        url = tidyUp(url);
-
-
-        var urlInfo = parseURL(url);
-
-        if (!urlInfo) {
-          respondWithErrorPage(response, notFoundPageToServe);
-          return;
-        }
-
-        var hostname = urlInfo.hostname;
-        hostname = hostname.replace("www.", "");
-
-        dns.lookup(hostname, function(err, addresses, family) {
-          if (err) {
-            response.statusCode = 404;
-            serveFile(response, notFoundPageToServe);
-            return;
-          }
-
-          if (url.indexOf("http") !== -1) {
-            httpGet(url, function(res, responseData) {
-              response.statusCode = 200;
-              response.end(responseData);
-              return;
-            });
-          //} else {
-          //  console.log("DON'T GO HERE");
-          //  response.statusCode = 404;
-          //  serveFile(response, notFoundPageToServe);
-          }
-        });
-      }
-    });
+    server.on("request", onRequest);
     server.listen(port, callback);
+  }
+
+  function onRequest(clientRequest, responseToClient) {
+    console.log("Request: " + clientRequest.url);
+    if (isHomeRoute(clientRequest.url)) {
+      response.statusCode = 200;
+      serveFile(responseToClient, homePageToServe);
+    } else {
+      var url = clientRequest.url;
+      var host = clientRequest.headers.host;
+      var hostIndex = url.indexOf(host);
+      var path = url.substring(hostIndex + host.length);
+
+      console.log(clientRequest.headers.host);
+      console.log(clientRequest.method);
+      console.log(path);
+      console.log(clientRequest.headers);
+
+      var options = {
+        host: clientRequest.headers.host,
+        method:clientRequest.method,
+        path: path,
+        headers: clientRequest.headers
+      };
+
+      var keepAliveAgent = new http.Agent({ keepAlive: true });
+      options.agent = keepAliveAgent;
+
+      var proxy = http.request(options, function(res) {
+        res.pipe(responseToClient, {
+          end: true
+        });
+      });
+
+      clientRequest.pipe(proxy, {
+        end: true
+      });
+    }
   }
 
   function stop(callback) {
