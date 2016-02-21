@@ -4,14 +4,17 @@
   var server = require("./server/server");
   var constants = require("./server/constants");
 
-  console.log(process.argv[2]);
+  var CONTENT_DIR = "src/content";
+  var INDEX_PATH = CONTENT_DIR + "/index.html";
+  var NOT_FOUND_PATH = CONTENT_DIR + "/404.html";
+
   var port = parseInt(process.argv[2]);
 
   if (isNaN(port)) {
     port = constants.port;
   }
 
-  server.start(port, "index.html", "404.html", function() {
+  server.start(port, INDEX_PATH, NOT_FOUND_PATH, function() {
     console.log("Server started");
   });
 }());

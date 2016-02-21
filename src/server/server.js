@@ -23,7 +23,7 @@
 
     server = http.createServer();
     server.on("request", function(request, response) {
-      if (request.url === "/" || request.url === "/index.html") {
+      if (request.url === "/home" || request.url === "/index.html") {
         response.statusCode = 200;
         serveFile(response, homePageToServe);
       } else {
