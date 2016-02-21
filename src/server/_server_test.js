@@ -44,7 +44,7 @@
     }
 
     it("serves home page from file", function(done) {
-      var url = util.createURL(constants.host, constants.port, "home");
+      var url = util.createURL(constants.host, constants.port);
 
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 200, "status code");

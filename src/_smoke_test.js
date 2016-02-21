@@ -24,7 +24,7 @@
 
     it("can get home page", function(done) {
       var url = serverUtil.createURL(serverConstants.host,
-          serverConstants.port, "home");
+          serverConstants.port);
       httpGet(url, function(response, receivedData) {
         var matchString = "Proxy Server home page";
         var foundHomePage = receivedData.indexOf(matchString) !== -1;

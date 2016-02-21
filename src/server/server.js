@@ -10,6 +10,8 @@
 
   var server;
 
+  var BASE_URL = "http://localhost:8080";
+
   function start(port, homePageToServe, notFoundPageToServe, callback) {
     if (!port) {
       throw new Error("requires port parameter");
@@ -23,7 +25,13 @@
 
     server = http.createServer();
     server.on("request", function(request, response) {
-      if (request.url === "/home" || request.url === "/index.html") {
+      console.log("Request: ");
+      console.log(request.url);
+
+      var homeStub = "/home";
+      var altHomeStub = "/index.html";
+
+      if (isHomeRoute(request.url)) {
         response.statusCode = 200;
         serveFile(response, homePageToServe);
       } else {
@@ -31,6 +39,14 @@
         serveFile(response, notFoundPageToServe);
       }
     });
+
+    function isHomeRoute(url) {
+      return (url === "/" ||
+          url === "/index.html" ||
+          url === BASE_URL + "/" ||
+          url === BASE_URL + "/index.html");
+    }
+
     server.listen(port, callback);
   }
 
