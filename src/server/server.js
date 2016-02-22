@@ -31,18 +31,13 @@
     function onRequest(clientRequest, responseToClient) {
       console.log("Request: " + clientRequest.url);
       if (isHomeRoute(clientRequest.url)) {
-        response.statusCode = 200;
+        responseToClient.statusCode = 200;
         serveFile(responseToClient, homePageToServe);
       } else {
         var url = clientRequest.url;
         var host = clientRequest.headers.host;
         var hostIndex = url.indexOf(host);
         var path = url.substring(hostIndex + host.length);
-
-        console.log(clientRequest.headers.host);
-        console.log(clientRequest.method);
-        console.log(path);
-        console.log(clientRequest.headers);
 
         dns.lookup(host, function(err, addresses, family) {
           if (err) {
@@ -54,23 +49,44 @@
 
           var options = {
             host: clientRequest.headers.host,
-            method:clientRequest.method,
+            method: clientRequest.method,
             path: path,
             headers: clientRequest.headers
           };
 
-          var keepAliveAgent = new http.Agent({ keepAlive: true });
-          options.agent = keepAliveAgent;
+          console.log(options);
 
-          var proxy = http.request(options, function(res) {
-            res.pipe(responseToClient, {
-              end: true
+          //var keepAliveAgent = new http.Agent({ keepAlive: true });
+          //options.agent = keepAliveAgent;
+
+          var proxyRequest = http.request(options);
+
+          proxyRequest.on("response", function(res) {
+            console.log("RESPONSE");
+            console.log(res.headers);
+
+            var remoteData = [];
+
+            res.on("data", function(chunk) {
+              remoteData.push(chunk);
+            });
+            res.on("end", function() {
+              console.log("END");
+              remoteData = Buffer.concat(remoteData);
+              console.log(remoteData);
+
+              responseToClient.writeHead(res.statusCode, res.headers);
+              responseToClient.end(remoteData);
             });
           });
 
-          clientRequest.pipe(proxy, {
-            end: true
+          proxyRequest.on('error', function(e) {
+            console.log("problem with request: " + e.message);
           });
+
+          proxyRequest.end();
+
+          //clientRequest.pipe(proxy);
         });
       }
     }

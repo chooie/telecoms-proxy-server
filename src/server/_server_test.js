@@ -64,8 +64,7 @@
     });
 
     it("returns requested page when it's not the home page", function(done) {
-      var url = util.createURL(constants.host, constants.port,
-        "http://www.bbc.co.uk/");
+      var url = "http://www.bbc.co.uk/";
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 200, "status code");
         done();
