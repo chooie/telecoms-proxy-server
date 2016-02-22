@@ -55,6 +55,8 @@
       child.stdout.on("data", function(chunk) {
         if (chunk.trim() === "Server started") {
           callback();
+        } else {
+          console.log(chunk);
         }
       });
       child.stderr.on("data", function(chunk) {

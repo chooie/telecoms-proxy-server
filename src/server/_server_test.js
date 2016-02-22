@@ -72,6 +72,16 @@
       });
     });
 
+    it("returns a block page when requesting a blocked url", function(done) {
+      var externalURL = "http://www.test.com/";
+      var url = util.createURL(constants.host, constants.port, externalURL);
+      httpGet(url, function(response, responseData) {
+        console.log(responseData);
+        assert.equal(response.statusCode, 403, "status code");
+        done();
+      });
+    });
+
     it("returns 404 for everything except home page", function(done) {
 
       var url = util.createURL(constants.host, constants.port, "blargle");

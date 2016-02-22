@@ -8,6 +8,8 @@
 
   var constants = require("./constants");
   var util = require("./shared/util");
+  var urlBlocker = require("./url_blocker");
+  var httpsListener = require("./https_listener");
 
   var server;
 
@@ -27,11 +29,14 @@
     server = http.createServer();
     server.on("request", function(clientRequest, responseToClient) {
       console.log("Request: " + clientRequest.url);
+      modifyRequestIfFromLocalhost(clientRequest);
       if (isHomeRoute(clientRequest.url)) {
-        responseToClient.statusCode = 200;
-        serveFile(responseToClient, homePageToServe);
+        homePageResponse(responseToClient, homePageToServe);
+
+      } else if (urlBlocker.isBlockedURL(clientRequest.url)) {
+        blockPageResponse(clientRequest, responseToClient);
+
       } else {
-        modifyRequestIfFromLocalhost(clientRequest);
         var host = clientRequest.headers.host;
         dns.lookup(host, function(err, addresses, family) {
           if (err) {
@@ -44,12 +49,10 @@
         });
       }
     });
-    server.listen(port, callback);
-
-    function proxyRequest(clientRequest, responseToClient) {
-      var options = getRequestOptions(clientRequest);
-      request(responseToClient, options);
-    }
+    httpsListener(server);
+    server.listen(port, function() {
+      callback();
+    });
   }
 
   function stop(callback) {
@@ -63,12 +66,24 @@
     url === BASE_URL + "/index.html");
   }
 
+  function homePageResponse(responseToClient, homePageToServe) {
+    responseToClient.statusCode = 200;
+    serveFile(responseToClient, homePageToServe);
+  }
+
+  function blockPageResponse(clientRequest, responseToClient) {
+    responseToClient.statusCode = 403;
+    responseToClient.end("The url: " + clientRequest.url + " is blocked.");
+  }
+
   function modifyRequestIfFromLocalhost(clientRequest) {
     var host = clientRequest.headers.host;
+
     if (host === "localhost:8080") {
       // Handle case when path is an http url
       var url = clientRequest.url;
-      if (url.indexOf("http://")) {
+
+      if (url.indexOf("/http://") > -1) {
         url = tidyUp(url);
         host = url.replace("http://", "");
 
@@ -78,9 +93,15 @@
           host = host.substring(0, slashIndex);
         }
 
+        clientRequest.url = url;
         clientRequest.headers.host = host;
       }
     }
+  }
+
+  function proxyRequest(clientRequest, responseToClient) {
+    var options = getRequestOptions(clientRequest);
+    request(responseToClient, options);
   }
 
   function tidyUp(url) {
