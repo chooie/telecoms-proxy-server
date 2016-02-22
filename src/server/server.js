@@ -25,20 +25,14 @@
     }
 
     server = http.createServer();
-    server.on("request", onRequest);
-    server.listen(port, callback);
-
-    function onRequest(clientRequest, responseToClient) {
+    server.on("request", function(clientRequest, responseToClient) {
       console.log("Request: " + clientRequest.url);
       if (isHomeRoute(clientRequest.url)) {
         responseToClient.statusCode = 200;
         serveFile(responseToClient, homePageToServe);
       } else {
-        var url = clientRequest.url;
+        modifyRequestIfFromLocalhost(clientRequest);
         var host = clientRequest.headers.host;
-        var hostIndex = url.indexOf(host);
-        var path = url.substring(hostIndex + host.length);
-
         dns.lookup(host, function(err, addresses, family) {
           if (err) {
             console.log("Host couldn't be resolved: " + host);
@@ -46,49 +40,15 @@
             serveFile(responseToClient, notFoundPageToServe);
             return;
           }
-
-          var options = {
-            host: clientRequest.headers.host,
-            method: clientRequest.method,
-            path: path,
-            headers: clientRequest.headers
-          };
-
-          console.log(options);
-
-          //var keepAliveAgent = new http.Agent({ keepAlive: true });
-          //options.agent = keepAliveAgent;
-
-          var proxyRequest = http.request(options);
-
-          proxyRequest.on("response", function(res) {
-            console.log("RESPONSE");
-            console.log(res.headers);
-
-            var remoteData = [];
-
-            res.on("data", function(chunk) {
-              remoteData.push(chunk);
-            });
-            res.on("end", function() {
-              console.log("END");
-              remoteData = Buffer.concat(remoteData);
-              console.log(remoteData);
-
-              responseToClient.writeHead(res.statusCode, res.headers);
-              responseToClient.end(remoteData);
-            });
-          });
-
-          proxyRequest.on('error', function(e) {
-            console.log("problem with request: " + e.message);
-          });
-
-          proxyRequest.end();
-
-          //clientRequest.pipe(proxy);
+          proxyRequest(clientRequest, responseToClient);
         });
       }
+    });
+    server.listen(port, callback);
+
+    function proxyRequest(clientRequest, responseToClient) {
+      var options = getRequestOptions(clientRequest);
+      request(responseToClient, options);
     }
   }
 
@@ -103,11 +63,77 @@
     url === BASE_URL + "/index.html");
   }
 
+  function modifyRequestIfFromLocalhost(clientRequest) {
+    var host = clientRequest.headers.host;
+    if (host === "localhost:8080") {
+      // Handle case when path is an http url
+      var url = clientRequest.url;
+      if (url.indexOf("http://")) {
+        url = tidyUp(url);
+        host = url.replace("http://", "");
+
+        var slashIndex = host.indexOf("/");
+
+        if (slashIndex > 0) {
+          host = host.substring(0, slashIndex);
+        }
+
+        clientRequest.headers.host = host;
+      }
+    }
+  }
+
   function tidyUp(url) {
     if (url.indexOf("/") === 0) {
       url = url.substring(1);
     }
     return url;
+  }
+
+  function getPath(host, url) {
+    var hostIndex = url.indexOf(host);
+    return url.substring(hostIndex + host.length);
+  }
+
+  function getRequestOptions(clientRequest) {
+    var host = clientRequest.headers.host;
+    var path = getPath(host, clientRequest.url);
+
+    var options = {
+      host: host,
+      method: clientRequest.method,
+      path: path,
+      headers: clientRequest.headers
+    };
+
+    var keepAliveAgent = new http.Agent({ keepAlive: true });
+    options.agent = keepAliveAgent;
+
+    return options;
+  }
+
+  function request(responseToClient, options) {
+    var proxyRequest = http.request(options);
+
+    proxyRequest.on("response", function(proxyResponse) {
+      var remoteData = [];
+
+      proxyResponse.on("data", function(chunk) {
+        remoteData.push(chunk);
+      });
+      proxyResponse.on("end", function() {
+        remoteData = Buffer.concat(remoteData);
+        responseToClient.writeHead(
+          proxyResponse.statusCode,
+          proxyResponse.headers
+        );
+        responseToClient.end(remoteData);
+      });
+    });
+    proxyRequest.on('error', function(e) {
+      console.log("Problem with request: " + e.message);
+    });
+    proxyRequest.end();
   }
 
   function respondWithErrorPage(response, notFoundPageToServe) {
@@ -122,46 +148,6 @@
       }
       response.end(data);
     });
-  }
-
-  function httpGet(url, callback) {
-    var request = http.get(url);
-    request.on("response", function(response) {
-      var data = "";
-
-      response.on("data", function(chunk) {
-        data += chunk;
-      });
-      response.on("end", function() {
-        callback(response, data);
-      });
-      response.on("error", function(error) {
-        console.log("Got error: " + error.message);
-      });
-    });
-  }
-
-  function parseURL(url) {
-    console.log("Matching: " + url);
-    var urlInfo = new RegExp([
-      "^(https?:)\/\/", // protocol (1)
-      "(([^:/?#]*)(?::([0-9]+))?)", // host (2) (hostname (3) and port (4))
-      "(\/[^?#]*)", // pathname (5)
-      "(\\?[^#]*|)", // search (6)
-      "(#.*|)$" // hash (7)
-    ].join(""));
-
-    var match = url.match(urlInfo);
-
-    return match && {
-        protocol: match[1],
-        host: match[2],
-        hostname: match[3],
-        port: match[4],
-        pathname: match[5],
-        search: match[6],
-        hash: match[7]
-    };
   }
 
   module.exports = {
