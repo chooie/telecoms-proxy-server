@@ -4,7 +4,6 @@
   var http = require("http");
   var dns = require("dns");
   var fs = require("fs");
-  var WebSocketServer = require("websocket").server;
   var crypto = require('crypto');
 
   var constants = require("./constants");
@@ -38,8 +37,6 @@
       } else if (clientRequest.url === "/blocked" ||
                  clientRequest.url === BASE_URL + "/blocked") {
 
-        console.log("HEY THERE");
-        console.log(clientRequest.method);
         if (clientRequest.method === "GET") {
           responseToClient.statusCode = 200;
           responseToClient.end(JSON.stringify(urlBlocker.getBlockedURLs()));
@@ -190,8 +187,9 @@
     var path = "cache/" + filename;
 
     try {
-      return fs.statSync(path).isFile()
+      fs.statSync(path).isFile();
       console.log("IS CACHED!!!!!");
+      return true;
     } catch (e) {
       console.log("IS NOT CACHED");
       console.log(e);
