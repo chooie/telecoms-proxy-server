@@ -33,6 +33,7 @@
   desc("Delete all generated files");
   task("clean", function() {
     jake.rmRf(GENERATED_DIR);
+    jake.rmRf(RUN_CACHE_DIR);
   });
 
   desc("Start localhost server for manual testing");

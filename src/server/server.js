@@ -5,6 +5,7 @@
   var dns = require("dns");
   var fs = require("fs");
   var WebSocketServer = require("websocket").server;
+  var crypto = require('crypto');
 
   var constants = require("./constants");
   var util = require("./shared/util");
@@ -28,8 +29,9 @@
 
     server = http.createServer();
     server.on("request", function(clientRequest, responseToClient) {
-      console.log("Request: " + clientRequest.url);
+      console.log("HTTP Request: " + clientRequest.url);
       modifyRequestIfFromLocalhost(clientRequest);
+
       if (isHomeRoute(clientRequest.url)) {
         homePageResponse(responseToClient, homePageToServe);
 
@@ -37,6 +39,20 @@
         blockPageResponse(clientRequest, responseToClient);
 
       } else {
+        var filename = crypto.createHash("md5").update(clientRequest.url)
+          .digest("hex");
+
+        if (isCached(filename)) {
+          fs.readFile("cache/" + filename, function(err, data) {
+            if (err) {
+              console.log(err);
+              throw err;
+            }
+            console.log(data);
+          });
+          return;
+        }
+
         var host = clientRequest.headers.host;
         dns.lookup(host, function(err, addresses, family) {
           if (err) {
@@ -160,9 +176,22 @@
     proxyRequest.end();
   }
 
+  function isCached(filename) {
+    var path = "cache/" + filename;
+
+    try {
+      fs.accessSync(path, fs.F_OK);
+      console.log("IS CACHED!!!!!");
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function cacheRequest(filename, data) {
-    console.log();
-    //fs.writeFile('cac', data, function(err) {
+    // TODO: hash url before passing to here
+    filename = crypto.createHash("md5").update(filename).digest("hex");
+    fs.writeFileSync("cache/" + filename, data);
     //  if (err) {
     //    console.log("Caching error: " + err);
     //  }

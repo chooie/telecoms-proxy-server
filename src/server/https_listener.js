@@ -11,9 +11,7 @@
   };
 
   function httpsConnectHandler(request, socketRequest, bodyhead) {
-    if (debug) {
-      console.log("HTTPS Request!!!");
-    }
+    console.log("HTTPS Request: " + request.url);
 
     var url = request.url;
     var httpVersion = request.httpVersion;
