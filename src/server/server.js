@@ -4,7 +4,6 @@
   var http = require("http");
   var dns = require("dns");
   var fs = require("fs");
-  var crypto = require('crypto');
 
   var constants = require("./constants");
   var util = require("./shared/util");
@@ -45,26 +44,12 @@
         blockPageResponse(clientRequest, responseToClient);
 
       } else {
-        //var filename = crypto.createHash("md5").update(clientRequest.url)
-        //  .digest("hex");
-        //
-        //if (isCached(filename)) {
-        //  fs.readFile("cache/" + filename, function(err, data) {
-        //    if (err) {
-        //      console.log(err);
-        //      throw err;
-        //    }
-        //    console.log(data);
-        //  });
-        //  return;
-        //}
-
         var host = clientRequest.headers.host;
+
         dns.lookup(host, function(err, addresses, family) {
           if (err) {
             console.log("Host couldn't be resolved: " + host);
-            responseToClient.statusCode = 404;
-            serveFile(responseToClient, notFoundPageToServe);
+            notFoundPageResponse(responseToClient, notFoundPageToServe);
             return;
           }
           proxyRequest(clientRequest, responseToClient);
@@ -91,6 +76,11 @@
   function homePageResponse(responseToClient, homePageToServe) {
     responseToClient.statusCode = 200;
     serveFile(responseToClient, homePageToServe);
+  }
+
+  function notFoundPageResponse(responseToClient, notFoundPageToServe) {
+    responseToClient.statusCode = 404;
+    serveFile(responseToClient, notFoundPageToServe);
   }
 
   function blockPageResponse(clientRequest, responseToClient) {
@@ -180,31 +170,6 @@
       console.log("Problem with request: " + e.message);
     });
     proxyRequest.end();
-  }
-
-  function isCached(filename) {
-    var path = "cache/" + filename;
-
-    try {
-      fs.statSync(path).isFile();
-      console.log("IS CACHED!!!!!");
-      return true;
-    } catch (e) {
-      console.log("IS NOT CACHED");
-      console.log(e);
-      return false;
-    }
-  }
-
-  function cacheRequest(filename, data) {
-    // TODO: hash url before passing to here
-    filename = crypto.createHash("md5").update(filename).digest("hex");
-    fs.writeFile("cache/" + filename, data, function(err) {
-      if (err) {
-        console.log("Caching error: " + err);
-      }
-      console.log("File saved: " + filename);
-    });
   }
 
   function respondWithErrorPage(response, notFoundPageToServe) {
