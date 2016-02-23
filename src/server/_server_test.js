@@ -83,7 +83,6 @@
     });
 
     it("returns 404 for everything except home page", function(done) {
-
       var url = util.createURL(constants.host, constants.port, "blargle");
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 404, "status code");

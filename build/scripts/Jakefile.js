@@ -17,8 +17,12 @@
   var TEST_FILES_PATH = "src/**/_*_test.js";
   var GENERATED_DIR = "generated";
   var TEMP_TEST_FILE_DIR = GENERATED_DIR + "/test";
+  var TEMP_CACHE_DIR = GENERATED_DIR + "/cache";
+  var RUN_CACHE_DIR = "cache";
 
   directory(TEMP_TEST_FILE_DIR);
+  directory(TEMP_CACHE_DIR);
+  directory(RUN_CACHE_DIR);
 
   //*** GENERAL
   desc("Lint and test everything");
@@ -32,7 +36,7 @@
   });
 
   desc("Start localhost server for manual testing");
-  task("run", function() {
+  task("run", [ RUN_CACHE_DIR ], function() {
     jake.exec("node src/_run.js", { printStdout: true }, function() {
       complete();
     });
@@ -40,7 +44,7 @@
 
   //*** TEST
   desc("Test the JavaScript code");
-  task("test", [ TEMP_TEST_FILE_DIR, "testServer" ]);
+  task("test", [ TEMP_TEST_FILE_DIR, TEMP_CACHE_DIR, "testServer" ]);
 
   task("testServer", function() {
     process.stdout.write("Testing Node.js code: ");

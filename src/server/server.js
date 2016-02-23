@@ -148,6 +148,9 @@
           proxyResponse.statusCode,
           proxyResponse.headers
         );
+
+        var url = options.host + options.path;
+        cacheRequest(url ,remoteData)
         responseToClient.end(remoteData);
       });
     });
@@ -155,6 +158,16 @@
       console.log("Problem with request: " + e.message);
     });
     proxyRequest.end();
+  }
+
+  function cacheRequest(filename, data) {
+    console.log();
+    //fs.writeFile('cac', data, function(err) {
+    //  if (err) {
+    //    console.log("Caching error: " + err);
+    //  }
+    //  console.log("File saved: " + filename);
+    //});
   }
 
   function respondWithErrorPage(response, notFoundPageToServe) {
