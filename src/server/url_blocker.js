@@ -5,20 +5,33 @@
     "http://www.test.com/"
   ];
 
-  module.exports.getBlockedURLs = function() {
+  function getBlockedURLs() {
     return blockedURLs;
-  };
+  }
 
-  module.exports.isBlockedURL = function(url) {
+  function isBlockedURL(url) {
     return blockedURLs.indexOf(url) !== -1;
-  };
+  }
 
-  module.exports.addURL = function() {
+  function addURL() {
 
-  };
+  }
 
-  module.exports.removeURL = function() {
+  function removeURL() {
 
+  }
+
+  function respondWithBlockedURLsJSON(responseToClient) {
+    responseToClient.statusCode = 200;
+    responseToClient.end(JSON.stringify(getBlockedURLs()));
+  }
+
+  module.exports = {
+    getBlockedUrls: getBlockedURLs,
+    isBlockedURL: isBlockedURL,
+    addURL: addURL,
+    removeURL: removeURL,
+    respondWithBlockedURLsJSON: respondWithBlockedURLsJSON
   };
 
 }());

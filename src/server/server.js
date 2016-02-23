@@ -38,8 +38,7 @@
                  clientRequest.url === BASE_URL + "/blocked") {
 
         if (clientRequest.method === "GET") {
-          responseToClient.statusCode = 200;
-          responseToClient.end(JSON.stringify(urlBlocker.getBlockedURLs()));
+          urlBlocker.respondWithBlockedURLsJSON(responseToClient);
         }
 
       } else if (urlBlocker.isBlockedURL(clientRequest.url)) {
