@@ -35,23 +35,33 @@
       if (isHomeRoute(clientRequest.url)) {
         homePageResponse(responseToClient, homePageToServe);
 
+      } else if (clientRequest.url === "/blocked" ||
+                 clientRequest.url === BASE_URL + "/blocked") {
+
+        console.log("HEY THERE");
+        console.log(clientRequest.method);
+        if (clientRequest.method === "GET") {
+          responseToClient.statusCode = 200;
+          responseToClient.end(JSON.stringify(urlBlocker.getBlockedURLs()));
+        }
+
       } else if (urlBlocker.isBlockedURL(clientRequest.url)) {
         blockPageResponse(clientRequest, responseToClient);
 
       } else {
-        var filename = crypto.createHash("md5").update(clientRequest.url)
-          .digest("hex");
-
-        if (isCached(filename)) {
-          fs.readFile("cache/" + filename, function(err, data) {
-            if (err) {
-              console.log(err);
-              throw err;
-            }
-            console.log(data);
-          });
-          return;
-        }
+        //var filename = crypto.createHash("md5").update(clientRequest.url)
+        //  .digest("hex");
+        //
+        //if (isCached(filename)) {
+        //  fs.readFile("cache/" + filename, function(err, data) {
+        //    if (err) {
+        //      console.log(err);
+        //      throw err;
+        //    }
+        //    console.log(data);
+        //  });
+        //  return;
+        //}
 
         var host = clientRequest.headers.host;
         dns.lookup(host, function(err, addresses, family) {
@@ -166,7 +176,7 @@
         );
 
         var url = options.host + options.path;
-        cacheRequest(url ,remoteData)
+        //cacheRequest(url ,remoteData)
         responseToClient.end(remoteData);
       });
     });
@@ -180,10 +190,11 @@
     var path = "cache/" + filename;
 
     try {
-      fs.accessSync(path, fs.F_OK);
+      return fs.statSync(path).isFile()
       console.log("IS CACHED!!!!!");
-      return true;
     } catch (e) {
+      console.log("IS NOT CACHED");
+      console.log(e);
       return false;
     }
   }
@@ -191,12 +202,12 @@
   function cacheRequest(filename, data) {
     // TODO: hash url before passing to here
     filename = crypto.createHash("md5").update(filename).digest("hex");
-    fs.writeFileSync("cache/" + filename, data);
-    //  if (err) {
-    //    console.log("Caching error: " + err);
-    //  }
-    //  console.log("File saved: " + filename);
-    //});
+    fs.writeFile("cache/" + filename, data, function(err) {
+      if (err) {
+        console.log("Caching error: " + err);
+      }
+      console.log("File saved: " + filename);
+    });
   }
 
   function respondWithErrorPage(response, notFoundPageToServe) {
