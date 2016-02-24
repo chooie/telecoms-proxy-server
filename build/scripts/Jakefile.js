@@ -5,7 +5,11 @@
   "use strict";
 
   var jshint = require("simplebuild-jshint");
-  var mocha = require("../util/mocha_runner.js");
+  var mocha = require("../util/mocha_runner");
+
+  var version = require("../util/version_checker");
+
+  var strict = !process.env.loose;
 
   var MOCHA_CONFIG = {
     ui: "bdd",
@@ -26,7 +30,7 @@
 
   //*** GENERAL
   desc("Lint and test everything");
-  task("default", [ "lint", "test" ], function() {
+  task("default", [ "version", "lint", "test" ], function() {
     console.log("\n\nBUILD OK");
   });
 
@@ -64,6 +68,19 @@
       files: ["src/**/*.js", "build/**/*.js"],
       options: require(JSHINT_CONFIG_PATH).options,
       globals: require(JSHINT_CONFIG_PATH).globals
+    }, complete, fail);
+  }, { async: true });
+
+  //*** CHECK VERSIONS
+
+  desc("Check Node version");
+  task("version", function() {
+    console.log("Checking Node.js version: .");
+    version.check({
+      name: "Node",
+      expected: require("../../package.json").engines.node,
+      actual: process.version,
+      strict: strict
     }, complete, fail);
   }, { async: true });
 
