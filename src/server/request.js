@@ -4,6 +4,8 @@
   var http = require("http");
   var dns = require("dns");
 
+  var response = require("./response");
+
   function request(responseToClient, options) {
     var proxyRequest = http.request(options);
 
@@ -59,7 +61,7 @@
     dns.lookup(host, function(err, addresses, family) {
       if (err) {
         console.log("Host couldn't be resolved: " + host);
-        notFoundPageResponse(responseToClient, notFoundPageToServe);
+        response.notFoundPageResponse(responseToClient, notFoundPageToServe);
         return;
       }
       callback(clientRequest, responseToClient);

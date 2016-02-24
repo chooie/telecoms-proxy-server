@@ -10,6 +10,7 @@
   var httpsListener = require("./https_listener");
   var route = require("./route");
   var request = require("./request");
+  var response = require("./response");
 
   var server;
 
@@ -32,7 +33,7 @@
       var url = clientRequest.url;
 
       if (route.isHomeRoute(url)) {
-        homePageResponse(responseToClient, homePageToServe);
+        response.homePageResponse(responseToClient, homePageToServe);
 
       } else if (route.isBlockedInfoRoute(url)) {
 
@@ -41,7 +42,7 @@
         }
 
       } else if (urlBlocker.isBlockedURL(url)) {
-        blockPageResponse(clientRequest, responseToClient);
+        response.blockPageResponse(clientRequest, responseToClient);
 
       } else {
         request.resolveURL(clientRequest, responseToClient, notFoundPageToServe,
@@ -56,35 +57,6 @@
 
   function stop(callback) {
     server.close(callback);
-  }
-
-  function homePageResponse(responseToClient, homePageToServe) {
-    responseToClient.statusCode = 200;
-    serveFile(responseToClient, homePageToServe);
-  }
-
-  function notFoundPageResponse(responseToClient, notFoundPageToServe) {
-    responseToClient.statusCode = 404;
-    serveFile(responseToClient, notFoundPageToServe);
-  }
-
-  function blockPageResponse(clientRequest, responseToClient) {
-    responseToClient.statusCode = 403;
-    responseToClient.end("The url: " + clientRequest.url + " is blocked.");
-  }
-
-  function respondWithErrorPage(response, notFoundPageToServe) {
-    response.statusCode = 404;
-    serveFile(response, notFoundPageToServe);
-  }
-
-  function serveFile(response, pageToServe) {
-    fs.readFile(pageToServe, function(err, data) {
-      if (err) {
-        throw err;
-      }
-      response.end(data);
-    });
   }
 
   module.exports = {
