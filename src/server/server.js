@@ -9,10 +9,9 @@
   var util = require("./shared/util");
   var urlBlocker = require("./url_blocker");
   var httpsListener = require("./https_listener");
+  var route = require("./route");
 
   var server;
-
-  var BASE_URL = "http://localhost:8080";
 
   function start(port, homePageToServe, notFoundPageToServe, callback) {
     if (!port) {
@@ -27,33 +26,26 @@
 
     server = http.createServer();
     server.on("request", function(clientRequest, responseToClient) {
-      console.log("HTTP Request: " + clientRequest.url);
-      modifyRequestIfFromLocalhost(clientRequest);
+      route.modifyRequestIfFromLocalhost(clientRequest);
 
-      if (isHomeRoute(clientRequest.url)) {
+      console.log("HTTP Request: " + clientRequest.url);
+      var url = clientRequest.url;
+
+      if (route.isHomeRoute(url)) {
         homePageResponse(responseToClient, homePageToServe);
 
-      } else if (clientRequest.url === "/blocked" ||
-                 clientRequest.url === BASE_URL + "/blocked") {
+      } else if (route.isBlockedInfoRoute(url)) {
 
         if (clientRequest.method === "GET") {
           urlBlocker.respondWithBlockedURLsJSON(responseToClient);
         }
 
-      } else if (urlBlocker.isBlockedURL(clientRequest.url)) {
+      } else if (urlBlocker.isBlockedURL(url)) {
         blockPageResponse(clientRequest, responseToClient);
 
       } else {
-        var host = clientRequest.headers.host;
-
-        dns.lookup(host, function(err, addresses, family) {
-          if (err) {
-            console.log("Host couldn't be resolved: " + host);
-            notFoundPageResponse(responseToClient, notFoundPageToServe);
-            return;
-          }
-          proxyRequest(clientRequest, responseToClient);
-        });
+        resolveURL(clientRequest, responseToClient, notFoundPageToServe,
+          proxyRequest);
       }
     });
     httpsListener(server);
@@ -66,11 +58,17 @@
     server.close(callback);
   }
 
-  function isHomeRoute(url) {
-    return (url === "/" ||
-    url === "/index.html" ||
-    url === BASE_URL + "/" ||
-    url === BASE_URL + "/index.html");
+  function resolveURL(clientRequest, responseToClient, notFoundPageToServe,
+                      callback) {
+    var host = clientRequest.headers.host;
+    dns.lookup(host, function(err, addresses, family) {
+      if (err) {
+        console.log("Host couldn't be resolved: " + host);
+        notFoundPageResponse(responseToClient, notFoundPageToServe);
+        return;
+      }
+      callback(clientRequest, responseToClient);
+    });
   }
 
   function homePageResponse(responseToClient, homePageToServe) {
@@ -88,39 +86,9 @@
     responseToClient.end("The url: " + clientRequest.url + " is blocked.");
   }
 
-  function modifyRequestIfFromLocalhost(clientRequest) {
-    var host = clientRequest.headers.host;
-
-    if (host === "localhost:8080") {
-      // Handle case when path is an http url
-      var url = clientRequest.url;
-
-      if (url.indexOf("/http://") > -1) {
-        url = tidyUp(url);
-        host = url.replace("http://", "");
-
-        var slashIndex = host.indexOf("/");
-
-        if (slashIndex > 0) {
-          host = host.substring(0, slashIndex);
-        }
-
-        clientRequest.url = url;
-        clientRequest.headers.host = host;
-      }
-    }
-  }
-
   function proxyRequest(clientRequest, responseToClient) {
     var options = getRequestOptions(clientRequest);
     request(responseToClient, options);
-  }
-
-  function tidyUp(url) {
-    if (url.indexOf("/") === 0) {
-      url = url.substring(1);
-    }
-    return url;
   }
 
   function getPath(host, url) {
