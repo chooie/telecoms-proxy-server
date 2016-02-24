@@ -76,7 +76,6 @@
       var externalURL = "http://www.test.com/";
       var url = util.createURL(constants.host, constants.port, externalURL);
       httpGet(url, function(response, responseData) {
-        console.log(responseData);
         assert.equal(response.statusCode, 403, "status code");
         done();
       });

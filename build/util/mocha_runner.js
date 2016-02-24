@@ -1,3 +1,4 @@
+// From https://github.com/jamesshore/automatopia/blob/master/build/util/mocha_runner.js
 (function() {
   "use strict";
 

@@ -11,6 +11,7 @@
   var route = require("./route");
   var request = require("./request");
   var response = require("./response");
+  var log = require("../log");
 
   var server;
 
@@ -29,7 +30,8 @@
     server.on("request", function(clientRequest, responseToClient) {
       route.modifyRequestIfFromLocalhost(clientRequest);
 
-      console.log("HTTP Request: " + clientRequest.url);
+      log("HTTP Request: " + clientRequest.url);
+
       var url = clientRequest.url;
 
       if (route.isHomeRoute(url)) {

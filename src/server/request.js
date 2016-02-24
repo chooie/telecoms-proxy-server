@@ -5,6 +5,7 @@
   var dns = require("dns");
 
   var response = require("./response");
+  var log = require("../log");
 
   function request(responseToClient, options) {
     var proxyRequest = http.request(options);
@@ -28,7 +29,7 @@
       });
     });
     proxyRequest.on('error', function(e) {
-      console.log("Problem with request: " + e.message);
+      log("Problem with request: " + e.message);
     });
     proxyRequest.end();
   }
@@ -60,7 +61,7 @@
     var host = clientRequest.headers.host;
     dns.lookup(host, function(err, addresses, family) {
       if (err) {
-        console.log("Host couldn't be resolved: " + host);
+        log("Host couldn't be resolved: " + host);
         response.notFoundPageResponse(responseToClient, notFoundPageToServe);
         return;
       }

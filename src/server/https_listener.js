@@ -1,9 +1,9 @@
 (function() {
   "use strict";
 
-  var debug = false;
-
   var net = require("net");
+
+  var log = require("../log");
 
   module.exports = function(server) {
     // Add handler for HTTPS (which issues a CONNECT to the proxy)
@@ -11,22 +11,19 @@
   };
 
   function httpsConnectHandler(request, socketRequest, bodyhead) {
-    console.log("HTTPS Request: " + request.url);
+    log("HTTPS Request: " + request.url);
 
     var url = request.url;
     var httpVersion = request.httpVersion;
     var hostport = getHostPortFromString(url, 443);
 
-    if (debug) {
-      console.log("Will connect to " + hostport[0] + ":" + hostport[1]);
-    }
+    log("Will connect to " + hostport[0] + ":" + hostport[1]);
+
     // Set up TCP connection
     var proxySocket = new net.Socket();
     proxySocket.connect(parseInt(hostport[1]), hostport[0], function() {
-      if (debug) {
-        console.log("  < connected to %s/%s", hostport[0], hostport[1]);
-        console.log("  > writing head of length %d", bodyhead.length);
-      }
+      log("  < connected to %s/%s", hostport[0], hostport[1]);
+      log("  > writing head of length %d", bodyhead.length);
 
       proxySocket.write(bodyhead);
 
@@ -36,30 +33,22 @@
     });
 
     proxySocket.on("data", function(chunk) {
-      if (debug) {
-        console.log("  < data length = %d", chunk.length);
-      }
+      log("  < data length = %d", chunk.length);
       socketRequest.write( chunk );
     });
 
     proxySocket.on("end", function() {
-      if (debug) {
-        console.log("  < end");
-      }
+      log("  < end");
       socketRequest.end();
     });
 
     socketRequest.on("data", function(chunk) {
-      if (debug) {
-        console.log("  > data length = %d", chunk.length);
-      }
+      log("  > data length = %d", chunk.length);
       proxySocket.write(chunk);
     });
 
     socketRequest.on("end", function() {
-      if (debug) {
-        console.log( '  > end' );
-      }
+      log( '  > end' );
       proxySocket.end();
     });
 
@@ -67,16 +56,12 @@
       socketRequest.write("HTTP/" + httpVersion + " 500 Connection error" +
         "\r\n\r\n");
 
-      if (debug) {
-        console.log("  < ERR: %s", err);
-      }
+      log("  < ERR: %s", err);
       socketRequest.end();
     });
 
     socketRequest.on("error", function ( err ) {
-      if (debug) {
-        console.log( '  > ERR: %s', err );
-      }
+      log( '  > ERR: %s', err );
       proxySocket.end();
     });
   }

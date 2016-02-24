@@ -15,6 +15,7 @@
   }
 
   server.start(port, INDEX_PATH, NOT_FOUND_PATH, function() {
+    // This must be logged for smoke test to work!
     console.log("Server started");
   });
 }());

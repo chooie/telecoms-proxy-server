@@ -2,7 +2,8 @@
   "use strict";
 
   var fs = require("fs");
-  var crypto = require('crypto');
+  var crypto = require("crypto");
+  var log = require("../log");
 
   var CACHE_DIR = "cache";
 
@@ -11,11 +12,11 @@
 
     try {
       fs.statSync(path).isFile();
-      console.log("IS CACHED!!!!!");
+      log("IS CACHED!!!!!");
       return true;
     } catch (e) {
-      console.log("IS NOT CACHED");
-      console.log(e);
+      log("IS NOT CACHED");
+      log(e);
       return false;
     }
   }
@@ -28,10 +29,12 @@
     if (isCached(filename)) {
       fs.readFile(CACHE_DIR + filename, function(err, data) {
         if (err) {
-          console.log(err);
+          log(err);
           throw err;
         }
-        console.log(data);
+
+        log(data);
+
       });
       return;
     }
@@ -42,9 +45,10 @@
     filename = crypto.createHash("md5").update(filename).digest("hex");
     fs.writeFile("cache/" + filename, data, function(err) {
       if (err) {
-        console.log("Caching error: " + err);
+        log("Caching error: " + err);
       }
-      console.log("File saved: " + filename);
+
+      log("File saved: " + filename);
     });
   }
 
