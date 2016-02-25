@@ -17,48 +17,48 @@
   $.prototype.handle = function(request, response) {
     route.modifyRequestIfFromLocalhost(request);
     log("HTTP Request: " + request.url);
-    this.respond(request, response);
+    this._respond(request, response);
   };
 
-  $.prototype.respond = function(request, response) {
+  $.prototype._respond = function(request, response) {
     var url = request.url;
 
     if (route.isHomeRoute(url)) {
-      this.serveHome(response);
+      this._serveHome(response);
     } else if (route.isBlockedInfoRoute(url)) {
-      this.serveBlockedInfo(response);
+      this._serveBlockedInfo(request, response);
     } else if (urlBlocker.isBlockedURL(url)) {
-      this.blockRequest(request, response);
+      this._blockRequest(request, response);
     } else {
-      this.requestThenServe(request, response);
+      this._requestThenServe(request, response);
     }
   };
 
-  $.prototype.serveHome = function(response) {
+  $.prototype._serveHome = function(response) {
     responseUtil.homePageResponse(response, this.homePageToServe);
   };
 
-  $.prototype.serveBlockedInfo = function(response) {
-    if (this.isGetRequest(this.request)) {
+  $.prototype._serveBlockedInfo = function(request, response) {
+    if (isGetRequest(request)) {
       urlBlocker.respondWithBlockedURLsJSON(response);
     } else {
       responseUtil.notFoundPageResponse(response, this.notFoundPageToServe);
     }
   };
 
-  $.prototype.blockRequest= function(request, response) {
+  $.prototype._blockRequest= function(request, response) {
     responseUtil.blockPageResponse(request, response);
   };
 
-  $.prototype.requestThenServe = function(request, response) {
+  $.prototype._requestThenServe = function(request, response) {
     requestUtil
       .resolveURL(request, response, this.notFoundPageToServe,
         requestUtil.proxyRequest);
   };
 
-  $.prototype.isGetRequest = function(request) {
+  function isGetRequest(request) {
     return request.method === "GET";
-  };
+  }
 
   module.exports = RequestHandler;
 
