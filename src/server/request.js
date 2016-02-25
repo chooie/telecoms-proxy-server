@@ -23,7 +23,7 @@
           proxyResponse.headers
         );
 
-        var url = options.host + options.path;
+        //var url = options.host + options.path;
         //cacheRequest(url ,remoteData)
         responseToClient.end(remoteData);
       });
@@ -59,7 +59,7 @@
   function resolveURL(clientRequest, responseToClient, notFoundPageToServe,
                       callback) {
     var host = clientRequest.headers.host;
-    dns.lookup(host, function(err, addresses, family) {
+    dns.lookup(host, function(err/*, addresses, family*/) {
       if (err) {
         log("Host couldn't be resolved: " + host);
         response.notFoundPageResponse(responseToClient, notFoundPageToServe);

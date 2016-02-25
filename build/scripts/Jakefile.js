@@ -17,7 +17,6 @@
   };
 
   var JSHINT_CONFIG_PATH = "../config/jshint.config";
-  var MOCHA_BIN_PATH = "./node_modules/.bin/mocha";
   var TEST_FILES_PATH = "src/**/_*_test.js";
   var GENERATED_DIR = "generated";
   var TEMP_TEST_FILE_DIR = GENERATED_DIR + "/test";

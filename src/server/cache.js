@@ -52,4 +52,9 @@
     });
   }
 
+  module.exports = {
+    loadCacheFile: loadCacheFile,
+    cacheRequest: cacheRequest
+  };
+
 }());

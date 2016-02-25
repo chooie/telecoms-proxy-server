@@ -37,6 +37,7 @@
       strict: true,
       // Prohibit use of explicitly undeclared variables
       undef: true,
+      unused: true,
 
       // Environments
       node: true,

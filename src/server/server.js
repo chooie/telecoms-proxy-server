@@ -2,7 +2,6 @@
   "use strict";
 
   var http = require("http");
-  var fs = require("fs");
 
   var RequestHandler = require("./request_handler");
   var httpsListener = require("./https_listener");

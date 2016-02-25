@@ -68,6 +68,7 @@
       var url = util.createURL(constants.host, constants.port, externalURL);
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 200, "status code");
+        assert.isOk(responseData, "response data");
         done();
       });
     });
@@ -77,6 +78,7 @@
       var url = util.createURL(constants.host, constants.port, externalURL);
       httpGet(url, function(response, responseData) {
         assert.equal(response.statusCode, 403, "status code");
+        assert.isOk(responseData, "response data");
         done();
       });
     });

@@ -26,7 +26,7 @@
     // didn't want the time penalty involved. Besides, this seems to be working okay.
     var savedListeners = disableExceptionListeners();
 
-    var runner = mocha.run(function(failures) {
+    mocha.run(function(failures) {
       restoreExceptionListeners(savedListeners);
       if (failures) {
         return failure("Tests failed");
