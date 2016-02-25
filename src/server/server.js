@@ -15,16 +15,12 @@
 
   var server;
 
-  function start(port, homePageToServe, notFoundPageToServe, callback) {
-    if (!port) {
-      throw new Error("requires port parameter");
-    }
-    if (!homePageToServe) {
-      throw new Error("requires home page parameter");
-    }
-    if (!notFoundPageToServe) {
-      throw new Error("requires 404 page parameter");
-    }
+  function start(options, callback) {
+    checkOptions(options);
+
+    var port = options.port;
+    var homePageToServe = options.homePageToServe;
+    var notFoundPageToServe = options.notFoundPageToServe;
 
     server = http.createServer();
     server.on("request", function(clientRequest, responseToClient) {
@@ -52,13 +48,23 @@
       }
     });
     httpsListener(server);
-    server.listen(port, function() {
-      callback();
-    });
+    server.listen(port, callback);
   }
 
   function stop(callback) {
     server.close(callback);
+  }
+
+  function checkOptions(options) {
+    if (!options.port) {
+      throw new Error("requires port parameter");
+    }
+    if (!options.homePageToServe) {
+      throw new Error("requires home page parameter");
+    }
+    if (!options.notFoundPageToServe) {
+      throw new Error("requires 404 page parameter");
+    }
   }
 
   module.exports = {

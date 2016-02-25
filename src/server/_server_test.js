@@ -92,14 +92,14 @@
 
     it("requires home page parameter", function(done) {
       assert.throws(function() {
-        server.start(constants.port);
+        server.start({ port: constants.port });
       }, Error);
       done();
     });
 
     it("requires 404 page parameter", function(done) {
       assert.throws(function() {
-        server.start(constants.port);
+        server.start({ port: constants.port });
       }, Error);
       done();
     });
@@ -112,7 +112,13 @@
     });
 
     it("runs callback when stop completes", function(done) {
-      server.start(constants.port, TEST_HOME_PAGE, TEST_404_PAGE);
+      var options = {
+        port: constants.port,
+        homePageToServe: TEST_HOME_PAGE,
+        notFoundPageToServe: TEST_404_PAGE
+      };
+
+      server.start(options);
       server.stop(function() {
         done();
       });
@@ -127,7 +133,12 @@
   });
 
   function httpGet(url, callback) {
-    server.start(constants.port, TEST_HOME_PAGE, TEST_404_PAGE, function() {
+    var options = {
+      port: constants.port,
+      homePageToServe: TEST_HOME_PAGE,
+      notFoundPageToServe: TEST_404_PAGE
+    };
+    server.start(options, function() {
       var request = http.get(url);
       request.on("response", function(response) {
         var data = "";

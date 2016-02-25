@@ -14,7 +14,13 @@
     port = constants.port;
   }
 
-  server.start(port, INDEX_PATH, NOT_FOUND_PATH, function() {
+  var options = {
+    port: port,
+    homePageToServe: INDEX_PATH,
+    notFoundPageToServe: NOT_FOUND_PATH
+  };
+
+  server.start(options, function() {
     // This must be logged for smoke test to work!
     console.log("Server started");
   });
