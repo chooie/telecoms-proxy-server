@@ -5,7 +5,7 @@
   var http = require("http");
 
   var assert = require("./assert");
-  var serverConstants = require("./server/constants");
+  var serverConstants = require("./server/shared/constants");
   var serverUtil = require("./server/shared/util");
   var log = require("./log");
 

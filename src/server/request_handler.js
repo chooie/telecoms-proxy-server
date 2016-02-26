@@ -15,7 +15,7 @@
   }
 
   $.prototype.handle = function(request, response) {
-    route.modifyRequestIfFromLocalhost(request);
+    route.modifyRequestIfFromLocalHost(request);
     log("HTTP Request: " + request.url);
     this._respond(request, response);
   };

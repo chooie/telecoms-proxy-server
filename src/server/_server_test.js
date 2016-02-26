@@ -6,7 +6,7 @@
   var fs = require("fs");
 
   var server = require("./server.js");
-  var constants = require("./constants");
+  var constants = require("./shared/constants");
   var util = require("./shared/util");
 
   var TEST_HOME_PAGE = "generated/test/testHome.html";

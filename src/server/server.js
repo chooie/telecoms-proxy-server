@@ -10,14 +10,11 @@
 
   function start(options, callback) {
     checkOptions(options);
-    server = http.createServer();
-    var rh = new RequestHandler(
+    var requestHandler = new RequestHandler(
       options.homePageToServe,
       options.notFoundPageToServe
     );
-    server.on("request", rh.handle.bind(rh));
-    httpsListener(server);
-    server.listen(options.port, callback);
+    setupServer(requestHandler, options.port, callback);
   }
 
   function stop(callback) {
@@ -34,6 +31,13 @@
     if (!options.notFoundPageToServe) {
       throw new Error("requires 404 page parameter");
     }
+  }
+
+  function setupServer(requestHandler, port, callback) {
+    server = http.createServer();
+    server.on("request", requestHandler.handle.bind(requestHandler));
+    httpsListener(server);
+    server.listen(port, callback);
   }
 
   module.exports = {

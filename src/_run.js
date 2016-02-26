@@ -2,7 +2,7 @@
   "use strict";
 
   var server = require("./server/server");
-  var constants = require("./server/constants");
+  var constants = require("./server/shared/constants");
 
   var CONTENT_DIR = "src/content";
   var INDEX_PATH = CONTENT_DIR + "/index.html";

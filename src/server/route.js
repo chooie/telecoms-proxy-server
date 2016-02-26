@@ -1,58 +1,65 @@
 (function() {
   "use strict";
 
-  var BASE_URL = "http://localhost:8080";
+  var constants = require("./shared/constants");
 
-  function isHomeRoute(url) {
-    return (
-      url === "/" ||
-      url === "/index.html" ||
-      url === BASE_URL + "/" ||
-      url === BASE_URL + "/index.html"
-    );
-  }
+  var EXTERNAL_INDICATOR = "http://";
 
-  function isBlockedInfoRoute(url) {
-    return (
-      url === "/blocked" ||
-      url === BASE_URL + "/blocked"
-    );
-  }
+  module.exports.isHomeRoute = function(url) {
+    return (url === "/" || url === "/index.html");
+  };
 
-  function modifyRequestIfFromLocalhost(clientRequest) {
-    var host = clientRequest.headers.host;
+  module.exports.isBlockedInfoRoute = function(url) {
+    return (url === "/blocked");
+  };
 
-    if (host === "localhost:8080") {
-      // Handle case when path is an http url
-      var url = clientRequest.url;
+  // This is necessary for when the tests make requests to the server
+  module.exports.modifyRequestIfFromLocalHost = function(request) {
+    if (isLocalHost(request.headers.host) && routeIsExternal(request.url)) {
+      modifyRequestURL(request);
+      modifyRequestHost(request);
+    }
 
-      if (url.indexOf("/http://") > -1) {
-        url = tidyUp(url);
-        host = url.replace("http://", "");
+    function isLocalHost(host) {
+      return host === constants.host + ":" + constants.port;
+    }
 
-        var slashIndex = host.indexOf("/");
+    function routeIsExternal(url) {
+      return url.indexOf(EXTERNAL_INDICATOR) > -1;
+    }
 
-        if (slashIndex > 0) {
-          host = host.substring(0, slashIndex);
+    function modifyRequestURL(request) {
+      request.url = removeLeadingSlashIfPresent(request.url);
+
+      function removeLeadingSlashIfPresent(url) {
+        if (url.indexOf("/") === 0) {
+          url = url.substring(1);
         }
-
-        clientRequest.url = url;
-        clientRequest.headers.host = host;
+        return url;
       }
     }
-  }
 
-  function tidyUp(url) {
-    if (url.indexOf("/") === 0) {
-      url = url.substring(1);
+    function modifyRequestHost(request) {
+      var urlToHost = request.url;
+      urlToHost = getURLlessProtocol(urlToHost);
+      urlToHost = getURLlessPath(urlToHost);
+
+      request.headers.host = urlToHost;
+
+      function getURLlessProtocol(url) {
+        return url.replace(EXTERNAL_INDICATOR, "");
+      }
+
+      function getURLlessPath(host) {
+        var slashIndex = host.indexOf("/");
+        var slashInString = slashIndex > 0;
+
+        if (slashInString) {
+          host = host.substring(0, slashIndex);
+        }
+        return host;
+      }
     }
-    return url;
-  }
-
-  module.exports = {
-    isHomeRoute: isHomeRoute,
-    isBlockedInfoRoute: isBlockedInfoRoute,
-    modifyRequestIfFromLocalhost: modifyRequestIfFromLocalhost
   };
 
 }());
